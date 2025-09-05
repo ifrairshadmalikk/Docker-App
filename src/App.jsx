@@ -1,3 +1,22 @@
+<<<<<<< HEAD
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+
+function App() {
+
+  return (
+    <>
+      
+      <h1>Online Shopping</h1>
+     <p>welcome to our store</p>
+    </>
+  )
+}
+
+export default App
+=======
 import React, { useState } from "react";
 import "./App.css";
 
@@ -35,3 +54,4 @@ function App() {
 }
 
 export default App;
+>>>>>>> origin/main
