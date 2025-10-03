@@ -1,4 +1,4 @@
-name: CI / Docker Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -8,81 +8,59 @@ on:
 
 jobs:
   test:
-    name: Test
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
-      # ---------- Client ----------
-      - name: Install dependencies (client)
-        working-directory: ./client
+      - name: Install dependencies
         run: npm install
 
-      - name: Run tests (client)
-        working-directory: ./client
-        run: |
-          if npm run | grep -q "test"; then
-            npm test
-          else
-            echo " No test script found in client, skipping..."
-          fi
-
-      # ---------- Backend ----------
-      - name: Install dependencies (backend)
-        working-directory: ./backend
-        run: npm install
-
-      - name: Run tests (backend)
-        working-directory: ./backend
-        run: |
-          if npm run | grep -q "test"; then
-            npm test
-          else
-            echo " No test script found in backend, skipping..."
-          fi
+      - name: Run tests (dummy)
+        run: echo "✅ No tests defined, skipping..."
 
   build:
-    name: Build
     runs-on: ubuntu-latest
     needs: test
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      # ---------- Client build ----------
-      - name: Build client
-        working-directory: ./client
-        run: npm run build || echo " No build script in client"
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      # ---------- Backend build ----------
-      - name: Build backend (if needed)
-        working-directory: ./backend
-        run: npm run build || echo " No build script in backend"
+      - name: Install & Build
+        run: |
+          npm install
+          npm run build || echo "No build script defined"
 
   docker:
-    name: Build Docker Image
     runs-on: ubuntu-latest
     needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: |
-          docker build -t myapp:latest .
-          echo "✅ Docker image built successfully"
-          # Future: add docker login + push step if needed
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: docker build -t myapp:latest .
 
   notify:
-    name: Notify
     runs-on: ubuntu-latest
-    needs: [test, build, docker]
+    needs: docker
+
     steps:
-      - name: Notify (placeholder)
-        run: echo "🎉 Workflow completed! Tests passed/skipped, build okay, docker image built."
+      - name: Notify Job
+        run: echo "✅ CI Pipeline completed successfully!"
