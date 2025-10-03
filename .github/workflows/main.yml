@@ -1,0 +1,74 @@
+# .github/workflows/ci-docker.yml
+name: CI / Docker Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name:  Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (client)
+        working-directory: ./client
+        run: npm install
+
+      - name: Run tests (client)
+        working-directory: ./client
+        run: npm test
+
+      - name: Install dependencies (backend)
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run tests (backend)
+        working-directory: ./backend
+        run: npm test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build client
+        working-directory: ./client
+        run: npm run build
+
+      - name: Build backend (if needed)
+        working-directory: ./backend
+        run: npm run build || echo "No build script"
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t myapp:latest .
+          # agar tum push karna chaho future mein, toh login aur push step add karna hoga
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [test, build, docker]
+    steps:
+      - name: Notify (placeholder)
+        run: echo " Workflow completed! Tests passed, build okay, docker image built."
